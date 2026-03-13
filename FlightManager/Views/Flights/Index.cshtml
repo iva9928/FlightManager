@@ -1,0 +1,56 @@
+﻿@model IEnumerable<FlightManager.Models.FlightListViewModel>
+
+<div class="card">
+
+    <h1>✈ Flights</h1>
+
+    <a href="/Flights/Create">
+        <button>Add Flight</button>
+    </a>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Departure</th>
+                <th>Duration</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var flight in Model)
+            {
+                <tr>
+
+                    <td>🌍 @flight.FromLocation</td>
+
+                    <td>🛬 @flight.ToLocation</td>
+
+                    <td>@flight.DepartureTime.ToString("dd.MM.yyyy HH:mm")</td>
+
+                    <td>@flight.Duration</td>
+
+                    <td>
+
+                        <a href="/Flights/Details/@flight.Id">
+                            <button>Details</button>
+                        </a>
+
+                        <a href="/Flights/Edit/@flight.Id">
+                            <button>Edit</button>
+                        </a>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

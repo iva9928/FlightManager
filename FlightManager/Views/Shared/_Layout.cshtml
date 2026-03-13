@@ -1,0 +1,213 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Flight Manager</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: 'Poppins',sans-serif;
+            background: linear-gradient(120deg,#1e3c72,#2a5298,#4facfe);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* airplane animation */
+
+        .plane {
+            position: fixed;
+            font-size: 60px;
+            top: 20%;
+            left: -120px;
+            animation: fly 18s linear infinite;
+            opacity: 0.8;
+        }
+
+        keyframes fly {
+            0%
+
+        {
+            left: -120px;
+            transform: rotate(10deg);
+        }
+
+        50% {
+            top: 30%;
+        }
+
+        100% {
+            left: 110%;
+            top: 10%;
+            transform: rotate(5deg);
+        }
+
+        }
+
+        /* clouds animation */
+
+        .cloud {
+            position: fixed;
+            font-size: 90px;
+            opacity: 0.15;
+            animation: cloudMove 60s linear infinite;
+        }
+
+        .cloud1 {
+            top: 10%;
+            left: -200px;
+        }
+
+        .cloud2 {
+            top: 50%;
+            left: -300px;
+        }
+
+        keyframes cloudMove {
+            0%
+
+        {
+            left: -300px;
+        }
+
+        100% {
+            left: 120%;
+        }
+
+        }
+
+        /* navbar */
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+            nav a {
+                color: white;
+                text-decoration: none;
+                margin: 0 15px;
+                font-weight: 500;
+                transition: 0.3s;
+            }
+
+                nav a:hover {
+                    color: #ffd166;
+                }
+
+        /* container */
+
+        .container {
+            padding: 40px;
+        }
+
+        /* glass card */
+
+        .card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            padding: 30px;
+            color: white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transition: 0.4s;
+        }
+
+            .card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            }
+
+        /* buttons */
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(45deg,#ff9966,#ff5e62);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+            button:hover {
+                transform: scale(1.1);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            }
+
+        /* flight cards */
+
+        .flight-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+            .flight-card:hover {
+                transform: translateX(10px);
+                background: rgba(255,255,255,0.35);
+            }
+
+        .flight-route {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- animated airplane -->
+    <div class="plane">✈️</div>
+
+    <!-- animated clouds -->
+    <div class="cloud cloud1">☁️</div>
+    <div class="cloud cloud2">☁️</div>
+
+    <!-- navigation -->
+
+    <nav>
+
+        <div>
+            <a href="/">Flight Manager</a>
+        </div>
+
+        <div>
+            <a href="/Flights">Flights</a>
+            <a href="/Reservations">Reservations</a>
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        @RenderBody()
+
+    </div>
+
+</body>
+</html>

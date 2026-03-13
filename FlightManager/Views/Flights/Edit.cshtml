@@ -1,0 +1,35 @@
+﻿@model FlightManager.Models.FlightEditViewModel
+
+<div class="card">
+
+    <h1>✈ Edit Flight</h1>
+
+    <form method="post">
+
+        <input type="hidden" asp-for="Id" />
+
+        <input asp-for="FromLocation" />
+
+        <input asp-for="ToLocation" />
+
+        <input asp-for="DepartureTime" type="datetime-local" />
+
+        <input asp-for="ArrivalTime" type="datetime-local" />
+
+        <input asp-for="AircraftType" />
+
+        <input asp-for="AircraftNumber" />
+
+        <input asp-for="PilotName" />
+
+        <input asp-for="EconomySeats" />
+
+        <input asp-for="BusinessSeats" />
+
+        <br><br>
+
+        <button>Save Changes</button>
+
+    </form>
+
+</div>

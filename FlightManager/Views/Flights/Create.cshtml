@@ -1,0 +1,33 @@
+﻿@model FlightManager.Models.FlightAddViewModel
+
+<div class="card">
+
+    <h1>✈ Create Flight</h1>
+
+    <form method="post">
+
+        <input asp-for="FromLocation" placeholder="From location" />
+
+        <input asp-for="ToLocation" placeholder="To location" />
+
+        <input asp-for="DepartureTime" type="datetime-local" />
+
+        <input asp-for="ArrivalTime" type="datetime-local" />
+
+        <input asp-for="AircraftType" placeholder="Aircraft type" />
+
+        <input asp-for="AircraftNumber" placeholder="Aircraft number" />
+
+        <input asp-for="PilotName" placeholder="Pilot name" />
+
+        <input asp-for="EconomySeats" placeholder="Economy seats" />
+
+        <input asp-for="BusinessSeats" placeholder="Business seats" />
+
+        <br><br>
+
+        <button>Create Flight</button>
+
+    </form>
+
+</div>

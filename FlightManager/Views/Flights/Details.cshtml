@@ -1,0 +1,54 @@
+﻿@model FlightManager.Models.FlightDetailsViewModel
+
+<div class="card">
+
+    <h1>✈ Flight Details</h1>
+
+    <p><strong>From:</strong> @Model.FromLocation</p>
+
+    <p><strong>To:</strong> @Model.ToLocation</p>
+
+    <p><strong>Departure:</strong> @Model.DepartureTime</p>
+
+    <p><strong>Arrival:</strong> @Model.ArrivalTime</p>
+
+    <p><strong>Aircraft:</strong> @Model.AircraftType</p>
+
+    <p><strong>Pilot:</strong> @Model.PilotName</p>
+
+    <p><strong>Economy seats:</strong> @Model.EconomySeats</p>
+
+    <p><strong>Business seats:</strong> @Model.BusinessSeats</p>
+
+    <h2>Passengers</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>EGN</th>
+                <th>Ticket</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var p in Model.Passengers)
+            {
+                <tr>
+
+                    <td>@p.FirstName @p.LastName</td>
+
+                    <td>@p.EGN</td>
+
+                    <td>@p.TicketType</td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
