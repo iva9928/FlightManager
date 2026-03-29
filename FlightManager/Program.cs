@@ -1,3 +1,4 @@
+// FlightManager\Program.cs
 using FlightManager.Data;
 using FlightManager.Data.Models;
 using FlightManager.Services.Interfaces;
@@ -16,6 +17,10 @@ builder.Services.AddDbContext<FlightManagerDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<FlightManagerDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IFlightService, FlightService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddControllersWithViews();
 
