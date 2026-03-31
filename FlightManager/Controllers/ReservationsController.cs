@@ -6,6 +6,8 @@ using FlightManager.Models;
 using FlightManager.Data.Models;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace FlightManager.Controllers
 {
@@ -13,18 +15,23 @@ namespace FlightManager.Controllers
     {
         private readonly IReservationService _reservationService;
         private readonly IFlightService _flightService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<ReservationsController> _logger;
 
         public ReservationsController(
             IReservationService reservationService,
             IFlightService flightService,
+            UserManager<ApplicationUser> userManager,
             ILogger<ReservationsController> logger)
         {
             _reservationService = reservationService;
             _flightService = flightService;
+            _userManager = userManager;
             _logger = logger;
         }
 
+        // 🔴 ADMIN + EMPLOYEE виждат ВСИЧКО
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> Index()
         {
             var reservations = await _reservationService.GetAllAsync();
@@ -35,61 +42,62 @@ namespace FlightManager.Controllers
                 Email = r.Email,
                 FlightId = r.FlightId,
                 Confirmed = r.Confirmed,
-                PassengersCount = r.Passengers?.Count ?? 0
+                PassengersCount = r.Passengers.Count,
+                Status = r.Status
             });
 
             return View(model);
         }
 
-        public async Task<IActionResult> Details(int id)
+        // 🟡 USER вижда само своите
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> MyReservations()
         {
-            var reservation = await _reservationService.GetByIdAsync(id);
-            if (reservation == null) return NotFound();
+            var userId = _userManager.GetUserId(User);
 
-            var model = new ReservationCreateViewModel
-            {
-                FlightId = reservation.FlightId,
-                Email = reservation.Email,
-                Passengers = reservation.Passengers?.Select(p => new PassengerViewModel
+            var reservations = (await _reservationService.GetAllAsync())
+                .Where(r => r.UserId == userId)
+                .Select(r => new ReservationListViewModel
                 {
-                    FirstName = p.FirstName,
-                    MiddleName = p.MiddleName,
-                    LastName = p.LastName,
-                    EGN = p.EGN,
-                    Phone = p.Phone,
-                    Nationality = p.Nationality,
-                    TicketType = p.TicketType
-                }).ToList() ?? new List<PassengerViewModel>()
-            };
+                    Id = r.Id,
+                    Email = r.Email,
+                    FlightId = r.FlightId,
+                    Confirmed = r.Confirmed,
+                    PassengersCount = r.Passengers.Count
+                });
 
-            ViewBag.Confirmed = reservation.Confirmed;
-            ViewBag.ReservationId = reservation.Id;
-
-            return View(model);
+            return View("Index", reservations);
         }
-
+        // 🌍 CREATE – всички логнати
+        [Authorize]
         public async Task<IActionResult> Create(int flightId)
         {
             var flight = await _flightService.GetByIdAsync(flightId);
             if (flight == null) return NotFound();
 
-            var model = new ReservationCreateViewModel { FlightId = flightId };
-            return View(model);
+            return View(new ReservationCreateViewModel
+            {
+                FlightId = flightId,
+                Passengers = new List<PassengerViewModel>
+                {
+                    new PassengerViewModel()
+                }
+            });
         }
 
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ReservationCreateViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             var reservation = new Reservation
             {
                 FlightId = model.FlightId,
                 Email = model.Email,
+                UserId = _userManager.GetUserId(User), // 🔥 ВАЖНО
                 Confirmed = false,
                 Passengers = model.Passengers.Select(p => new Passenger
                 {
@@ -103,31 +111,40 @@ namespace FlightManager.Controllers
                 }).ToList()
             };
 
-            var created = await _reservationService.CreateAsync(reservation);
+            await _reservationService.CreateAsync(reservation);
 
-            if (created.Confirmed)
-            {
-                // send confirmation (stub: log)
-                _logger.LogInformation("Reservation {ReservationId} confirmed and email sent to {Email}", created.Id, created.Email);
-            }
-
-            return RedirectToAction(nameof(Index));
+            TempData["Success"] = "Reservation created!";
+            return RedirectToAction(nameof(MyReservations));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        // 🔵 EMPLOYEE одобрява
+        [Authorize(Roles = "Employee")]
         public async Task<IActionResult> Confirm(int id)
         {
             await _reservationService.ConfirmAsync(id);
-            return RedirectToAction(nameof(Details), new { id });
-        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+            TempData["Success"] = "Reservation approved!";
+
+            return RedirectToAction(nameof(Index));
+        }
+        // 🟡 USER може да трие САМО своите
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> Delete(int id)
         {
+            var reservation = await _reservationService.GetByIdAsync(id);
+
+            if (reservation == null)
+                return NotFound();
+
+            var userId = _userManager.GetUserId(User);
+
+            // 🔥 защита
+            if (reservation.UserId != userId)
+                return Unauthorized();
+
             await _reservationService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+
+            return RedirectToAction(nameof(MyReservations));
         }
     }
 }

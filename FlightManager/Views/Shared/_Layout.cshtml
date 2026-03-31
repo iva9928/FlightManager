@@ -1,6 +1,6 @@
-﻿@{
-    Layout = null;
-}
+﻿@using Microsoft.AspNetCore.Identity
+@using FlightManager.Data.Models
+@inject SignInManager<ApplicationUser> SignInManager
 
 <!DOCTYPE html>
 <html lang="en">
@@ -18,13 +18,10 @@
 
         body {
             margin: 0;
-            font-family: 'Poppins',sans-serif;
+            font-family: 'Poppins', sans-serif;
             background: linear-gradient(120deg,#1e3c72,#2a5298,#4facfe);
-            overflow-x: hidden;
             min-height: 100vh;
         }
-
-        /* airplane animation */
 
         .plane {
             position: fixed;
@@ -32,7 +29,6 @@
             top: 20%;
             left: -120px;
             animation: fly 18s linear infinite;
-            opacity: 0.8;
         }
 
         keyframes fly {
@@ -54,8 +50,6 @@
         }
 
         }
-
-        /* clouds animation */
 
         .cloud {
             position: fixed;
@@ -87,92 +81,43 @@
 
         }
 
-        /* navbar */
-
         nav {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             padding: 20px 60px;
             background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
         }
 
             nav a {
                 color: white;
                 text-decoration: none;
-                margin: 0 15px;
-                font-weight: 500;
-                transition: 0.3s;
+                margin: 0 10px;
             }
 
-                nav a:hover {
-                    color: #ffd166;
-                }
-
-        /* container */
+        .right-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
         .container {
             padding: 40px;
         }
 
-        /* glass card */
-
         .card {
             background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(15px);
-            border-radius: 25px;
-            padding: 30px;
+            border-radius: 20px;
+            padding: 25px;
             color: white;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            transition: 0.4s;
         }
-
-            .card:hover {
-                transform: translateY(-8px) scale(1.02);
-                box-shadow: 0 30px 80px rgba(0,0,0,0.4);
-            }
-
-        /* buttons */
 
         button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 30px;
-            background: linear-gradient(45deg,#ff9966,#ff5e62);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-            button:hover {
-                transform: scale(1.1);
-                box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            }
-
-        /* flight cards */
-
-        .flight-card {
-            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
             border-radius: 20px;
-            padding: 20px;
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
-        }
-
-            .flight-card:hover {
-                transform: translateX(10px);
-                background: rgba(255,255,255,0.35);
-            }
-
-        .flight-route {
-            font-size: 20px;
-            font-weight: 600;
+            border: none;
+            background: #ff5e62;
+            color: white;
+            cursor: pointer;
         }
 
     </style>
@@ -181,14 +126,9 @@
 
 <body>
 
-    <!-- animated airplane -->
     <div class="plane">✈️</div>
-
-    <!-- animated clouds -->
     <div class="cloud cloud1">☁️</div>
     <div class="cloud cloud2">☁️</div>
-
-    <!-- navigation -->
 
     <nav>
 
@@ -196,17 +136,52 @@
             <a href="/">Flight Manager</a>
         </div>
 
-        <div>
+        <div class="right-nav">
+
             <a href="/Flights">Flights</a>
-            <a href="/Reservations">Reservations</a>
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                if (User.IsInRole("Admin"))
+                {
+                    <a href="/Flights/Create">Add Flight</a>
+                }
+
+                if (User.IsInRole("Employee"))
+                {
+                    <a href="/Reservations">All Reservations</a>
+                }
+
+                if (User.IsInRole("User"))
+                {
+                    <a href="/Reservations/MyReservations">My Reservations</a>
+                }
+
+                <span>👤 @User.Identity?.Name</span>
+
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit">Logout</button>
+                </form>
+            }
+            else
+            {
+                <a href="/Account/Login">Login</a>
+                <a href="/Account/Register">Register</a>
+            }
+
         </div>
 
     </nav>
 
+    @if (TempData["Success"] != null)
+    {
+        <div style="text-align:center; color:white;">
+            ✔ @TempData["Success"]
+        </div>
+    }
+
     <div class="container">
-
         @RenderBody()
-
     </div>
 
 </body>

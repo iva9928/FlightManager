@@ -1,0 +1,22 @@
+﻿@model FlightManager.Models.ReservationCreateViewModel
+
+<h2>Reservation Details</h2>
+
+<p><strong>Email:</strong> @Model.Email</p>
+
+<h4>Passengers</h4>
+
+<ul>
+    @foreach (var p in Model.Passengers)
+    {
+        <li>@p.FirstName @p.LastName (@p.TicketType)</li>
+    }
+</ul>
+
+@if (!(bool)ViewBag.Confirmed)
+{
+    <form asp-action="Confirm" method="post">
+        <input type="hidden" name="id" value="@ViewBag.ReservationId" />
+        <button type="submit">Confirm</button>
+    </form>
+}

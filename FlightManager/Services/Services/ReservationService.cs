@@ -1,5 +1,4 @@
-﻿// FlightManager\Services\Services\ReservationService.cs
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FlightManager.Data;
@@ -19,72 +18,77 @@ namespace FlightManager.Services.Services
         }
 
         public async Task<IEnumerable<Reservation>> GetAllAsync()
-            => await _db.Reservations.Include(r => r.Passengers).Include(r => r.Flight).AsNoTracking().ToListAsync();
+            => await _db.Reservations
+                .Include(r => r.Passengers)
+                .Include(r => r.Flight)
+                .AsNoTracking()
+                .ToListAsync();
 
         public async Task<Reservation?> GetByIdAsync(int id)
-            => await _db.Reservations.Include(r => r.Passengers).Include(r => r.Flight).FirstOrDefaultAsync(r => r.Id == id);
+            => await _db.Reservations
+                .Include(r => r.Passengers)
+                .Include(r => r.Flight)
+                .FirstOrDefaultAsync(r => r.Id == id);
 
+        // 🔥 USER създава → винаги Pending
         public async Task<Reservation> CreateAsync(Reservation reservation)
         {
-            // Load flight for availability check
-            var flight = await _db.Flights.FirstOrDefaultAsync(f => f.Id == reservation.FlightId);
+            reservation.Status = "Pending";
+            reservation.Confirmed = false;
 
-            // Normalize ticket type checks (case-insensitive)
-            var businessCount = reservation.Passengers.Count(p => string.Equals(p.TicketType, "business", System.StringComparison.OrdinalIgnoreCase));
-            var economyCount = reservation.Passengers.Count(p => !string.Equals(p.TicketType, "business", System.StringComparison.OrdinalIgnoreCase));
-
-            if (flight != null && flight.BusinessSeats >= businessCount && flight.EconomySeats >= economyCount)
-            {
-                // Enough seats -> confirm reservation and decrement seats
-                reservation.Confirmed = true;
-
-                flight.BusinessSeats -= businessCount;
-                flight.EconomySeats -= economyCount;
-
-                // Save flight changes and reservation
-                await _db.Reservations.AddAsync(reservation);
-                await _db.SaveChangesAsync();
-            }
-            else
-            {
-                // Not enough seats -> save as unconfirmed so admin can inspect / confirm later
-                reservation.Confirmed = false;
-                await _db.Reservations.AddAsync(reservation);
-                await _db.SaveChangesAsync();
-            }
+            await _db.Reservations.AddAsync(reservation);
+            await _db.SaveChangesAsync();
 
             return reservation;
         }
 
+        // 🔥 EMPLOYEE одобрява
         public async Task ConfirmAsync(int id)
         {
-            var res = await _db.Reservations.Include(r => r.Passengers).FirstOrDefaultAsync(r => r.Id == id);
+            var res = await _db.Reservations
+                .Include(r => r.Passengers)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (res == null) return;
-            if (res.Confirmed) return; // already confirmed
 
             var flight = await _db.Flights.FirstOrDefaultAsync(f => f.Id == res.FlightId);
             if (flight == null) return;
 
-            var businessCount = res.Passengers.Count(p => string.Equals(p.TicketType, "business", System.StringComparison.OrdinalIgnoreCase));
-            var economyCount = res.Passengers.Count(p => !string.Equals(p.TicketType, "business", System.StringComparison.OrdinalIgnoreCase));
+            var businessCount = res.Passengers.Count(p =>
+                p.TicketType.ToLower() == "business");
 
-            if (flight.BusinessSeats >= businessCount && flight.EconomySeats >= economyCount)
+            var economyCount = res.Passengers.Count(p =>
+                p.TicketType.ToLower() != "business");
+
+            bool hasSeats =
+                flight.BusinessSeats >= businessCount &&
+                flight.EconomySeats >= economyCount;
+
+            if (hasSeats)
             {
+                res.Status = "Approved";
+                res.Confirmed = true;
+
                 flight.BusinessSeats -= businessCount;
                 flight.EconomySeats -= economyCount;
-
-                res.Confirmed = true;
-                await _db.SaveChangesAsync();
             }
-            // if not enough seats then do nothing (stay unconfirmed)
+            else
+            {
+                res.Status = "Rejected";
+                res.Confirmed = false;
+            }
+
+            await _db.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var res = await _db.Reservations.Include(r => r.Passengers).FirstOrDefaultAsync(r => r.Id == id);
+            var res = await _db.Reservations
+                .Include(r => r.Passengers)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
             if (res == null) return;
 
-            // Do not delete confirmed reservations
             if (res.Confirmed) return;
 
             _db.Reservations.Remove(res);

@@ -2,7 +2,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using FlightManager.Services.Interfaces;
-using FlightManager.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 
 namespace FlightManager.Controllers
@@ -23,11 +22,19 @@ namespace FlightManager.Controllers
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                users = users.Where(u => u.Email.Contains(search) || u.UserName.Contains(search) || u.FirstName.Contains(search) || u.LastName.Contains(search));
+                users = users.Where(u =>
+                    u.Email.Contains(search) ||
+                    u.UserName.Contains(search) ||
+                    u.FirstName.Contains(search) ||
+                    u.LastName.Contains(search));
             }
 
             var total = users.Count();
-            var items = users.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            var items = users
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             ViewBag.Page = page;
             ViewBag.PageSize = pageSize;
@@ -41,6 +48,7 @@ namespace FlightManager.Controllers
         {
             var user = await _userService.GetByIdAsync(id);
             if (user == null) return NotFound();
+
             return View(user);
         }
     }

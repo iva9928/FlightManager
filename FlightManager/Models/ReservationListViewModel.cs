@@ -11,5 +11,7 @@
         public bool Confirmed { get; set; }
 
         public int PassengersCount { get; set; }
+
+        public string Status { get; set; }
     }
 }

@@ -1,0 +1,49 @@
+﻿@model FlightManager.Models.ReservationCreateViewModel
+
+<h2>Create Reservation</h2>
+
+<form asp-controller="Reservations" asp-action="Create" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <!-- 🔥 показва грешките -->
+    <div asp-validation-summary="All" style="color:red;"></div>
+
+    <input type="hidden" asp-for="FlightId" />
+
+    <div style="margin-bottom:15px;">
+        <label>Email</label><br />
+        <input asp-for="Email" style="padding:5px; width:250px;" />
+    </div>
+
+    <h4>Passenger</h4>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+        <input asp-for="Passengers[0].FirstName" placeholder="First Name" style="padding:5px;" />
+
+        <input asp-for="Passengers[0].MiddleName" placeholder="Middle Name" style="padding:5px;" />
+
+        <input asp-for="Passengers[0].LastName" placeholder="Last Name" style="padding:5px;" />
+
+        <input asp-for="Passengers[0].EGN" placeholder="EGN" style="padding:5px;" />
+
+        <input asp-for="Passengers[0].Phone" placeholder="Phone" style="padding:5px;" />
+
+        <input asp-for="Passengers[0].Nationality" placeholder="Nationality" style="padding:5px;" />
+
+        <input asp-for="Passengers[0].TicketType" placeholder="Economy / Business" style="padding:5px;" />
+
+    </div>
+
+    <br />
+
+    <button type="submit"
+            style="background:#ff6b6b; color:white; padding:10px 20px; border:none; border-radius:20px;">
+        Save
+    </button>
+
+</form>
+
+
+}

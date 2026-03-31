@@ -1,17 +1,19 @@
 ﻿@model IEnumerable<FlightManager.Models.FlightListViewModel>
 
-<div class="card">
+<div class="card" style="padding:30px; border-radius:20px; background: linear-gradient(135deg,#2c3e50,#4ca1af); color:white;">
 
-    <h1>✈ Flights</h1>
+    <h1 style="margin-bottom:20px;">✈ Flights</h1>
 
-    <a href="/Flights/Create">
-        <button>Add Flight</button>
+    <a asp-controller="Flights" asp-action="Create">
+        <button style="background:#ff6b6b; color:white; padding:10px 20px; border:none; border-radius:20px; margin-bottom:20px;">
+            Add Flight
+        </button>
     </a>
 
-    <table>
+    <table style="width:100%; border-collapse:separate; border-spacing:0 10px;">
 
         <thead>
-            <tr>
+            <tr style="text-align:left;">
                 <th>From</th>
                 <th>To</th>
                 <th>Departure</th>
@@ -24,7 +26,7 @@
 
             @foreach (var flight in Model)
             {
-                <tr>
+                <tr style="background: rgba(255,255,255,0.1); border-radius:15px;">
 
                     <td>🌍 @flight.FromLocation</td>
 
@@ -34,14 +36,29 @@
 
                     <td>@flight.Duration</td>
 
-                    <td>
+                    <td style="display:flex; gap:10px;">
 
-                        <a href="/Flights/Details/@flight.Id">
-                            <button>Details</button>
+                        <!-- Details -->
+                        <a asp-controller="Flights" asp-action="Details" asp-route-id="@flight.Id">
+                            <button style="background:#ff6b6b; color:white; border:none; padding:8px 15px; border-radius:20px;">
+                                Details
+                            </button>
                         </a>
 
-                        <a href="/Flights/Edit/@flight.Id">
-                            <button>Edit</button>
+                        <!-- Edit -->
+                        <a asp-controller="Flights" asp-action="Edit" asp-route-id="@flight.Id">
+                            <button style="background:#ff6b6b; color:white; border:none; padding:8px 15px; border-radius:20px;">
+                                Edit
+                            </button>
+                        </a>
+
+                        <!-- ✅ РЕЗЕРВАЦИЯ (FIXED) -->
+                        <a asp-controller="Reservations"
+                           asp-action="Create"
+                           asp-route-flightId="@flight.Id">
+                            <button style="background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:20px;">
+                                ✈ Reserve
+                            </button>
                         </a>
 
                     </td>
