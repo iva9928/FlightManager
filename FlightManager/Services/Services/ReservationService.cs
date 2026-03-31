@@ -81,6 +81,31 @@ namespace FlightManager.Services.Services
             await _db.SaveChangesAsync();
         }
 
+        public async Task UnconfirmAsync(int id)
+        {
+            var res = await _db.Reservations
+                .Include(r => r.Passengers)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (res == null) return;
+
+            if (!res.Confirmed) return;
+
+            var flight = await _db.Flights.FirstOrDefaultAsync(f => f.Id == res.FlightId);
+            if (flight == null) return;
+
+            var businessCount = res.Passengers.Count(p => p.TicketType.ToLower() == "business");
+            var economyCount = res.Passengers.Count(p => p.TicketType.ToLower() != "business");
+
+            flight.BusinessSeats += businessCount;
+            flight.EconomySeats += economyCount;
+
+            res.Confirmed = false;
+            res.Status = "Pending";
+
+            await _db.SaveChangesAsync();
+        }
+
         public async Task DeleteAsync(int id)
         {
             var res = await _db.Reservations

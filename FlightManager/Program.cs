@@ -14,19 +14,26 @@ var connectionString = builder.Configuration
 builder.Services.AddDbContext<FlightManagerDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// ?? IDENTITY (ÂÀÆÍÎ)
-builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+// Identity configuration
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.User.RequireUniqueEmail = true;
 })
-.AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<FlightManagerDbContext>();
+    .AddEntityFrameworkStores<FlightManagerDbContext>()
+    .AddDefaultTokenProviders();
 
 // ?? SERVICES
 builder.Services.AddScoped<IFlightService, FlightService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IUserService, UserService>();
-
+// Razor Pages are used by Identity and some UI parts — register Razor Pages
+builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

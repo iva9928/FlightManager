@@ -1,22 +1,49 @@
 ﻿@model FlightManager.Models.ReservationCreateViewModel
 
-<h2>Reservation Details</h2>
-
-<p><strong>Email:</strong> @Model.Email</p>
-
-<h4>Passengers</h4>
-
-<ul>
-    @foreach (var p in Model.Passengers)
-    {
-        <li>@p.FirstName @p.LastName (@p.TicketType)</li>
-    }
-</ul>
-
-@if (!(bool)ViewBag.Confirmed)
-{
-    <form asp-action="Confirm" method="post">
-        <input type="hidden" name="id" value="@ViewBag.ReservationId" />
-        <button type="submit">Confirm</button>
-    </form>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<div class="card medium">
+    <h1 style="margin-bottom:10px;color:white;">Reservation Details</h1>
+
+    <p><strong>Email:</strong> <span class="muted">@Model.Email</span></p>
+
+    <h3 style="margin-top:12px;color:white;">Passengers</h3>
+    <ul>
+        @foreach (var p in Model.Passengers)
+        {
+            <li style="padding:6px 0;color:white;">@p.FirstName @p.MiddleName @p.LastName — <span class="muted">@p.TicketType</span></li>
+        }
+    </ul>
+
+    <div style="margin-top:18px;">
+        @if (User.IsInRole("Employee"))
+        {
+            if ((bool)ViewBag.Confirmed)
+            {
+                <form asp-action="Unconfirm" method="post" style="display:inline-block;margin-right:8px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@ViewBag.ReservationId" />
+                    <button type="submit" class="btn btn-neutral">Unconfirm</button>
+                </form>
+            }
+            else
+            {
+                <form asp-action="Confirm" method="post" style="display:inline-block;margin-right:8px;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@ViewBag.ReservationId" />
+                    <button type="submit" class="btn btn-approve">Confirm</button>
+                </form>
+            }
+            <a asp-action="Index" class="btn btn-primary">Back to Reservations</a>
+        }
+        else
+        {
+            // regular user or admin sees only back
+            var backAction = User.IsInRole("User") ? "MyReservations" : "Index";
+            <a asp-action="@backAction" class="btn btn-primary">Back</a>
+        }
+    </div>
+
+</div>

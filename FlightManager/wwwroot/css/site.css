@@ -20,3 +20,55 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Custom site additions for FlightManager */
+:root{
+    --card-bg: rgba(255,255,255,0.08);
+    --muted-white: rgba(255,255,255,0.9);
+    --accent: #ff5e62;
+    --accent-2: #ff9966;
+    --dark-blue: #1e3c72;
+}
+
+body { font-family: 'Poppins', sans-serif; }
+
+.card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    color: white;
+}
+
+.card.wide{ max-width: 1000px; margin: 30px auto; }
+.card.medium{ max-width: 720px; margin: 30px auto; }
+
+.form-control{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
+    color: white;
+}
+
+.select-control{ padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:var(--dark-blue);color:white; }
+
+.btn{
+    display:inline-block;padding:8px 14px;border-radius:8px;color:white;text-decoration:none;border:none;cursor:pointer;
+}
+.btn-primary{ background: linear-gradient(45deg,var(--accent-2),var(--accent)); }
+.btn-approve{ background: #27ae60; }
+.btn-neutral{ background: #2b7a78; }
+.btn-danger{ background: #c0392b; }
+
+.table-custom{ width:100%; border-collapse:collapse; color: white; }
+.table-custom th, .table-custom td{ padding:10px; border-bottom:1px solid rgba(255,255,255,0.04); }
+
+.pager { color: var(--muted-white); }
+
+.muted { color: rgba(255,255,255,0.8); }
+
+.header-link { color: #ffd166; text-decoration:none; }
+
+/* make datalist options readable (browser-dependent) */
+datalist option { color:black; }

@@ -1,21 +1,70 @@
 ﻿@model FlightManager.Models.RegisterViewModel
+@inherits Microsoft.AspNetCore.Mvc.Razor.RazorPage<FlightManager.Models.RegisterViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<div class="card">
-    <h2>Register</h2>
+<div class="card" style="max-width:520px;margin:40px auto;padding:24px;">
+    <h1 style="text-align:center">Create an account</h1>
 
-    <form method="post">
+    <form asp-action="Register" method="post" novalidate>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+                <label asp-for="Email"></label>
+                <input asp-for="Email" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
 
-        <input asp-for="Email" placeholder="Email" />
-        <input asp-for="FirstName" placeholder="First Name" />
-        <input asp-for="LastName" placeholder="Last Name" />
-        <input asp-for="EGN" placeholder="EGN" />
-        <input asp-for="Address" placeholder="Address" />
-        <input asp-for="PhoneNumber" placeholder="Phone" />
+            <div>
+                <label asp-for="Password"></label>
+                <input asp-for="Password" type="password" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
 
-        <input asp-for="Password" type="password" placeholder="Password" />
-        <input asp-for="ConfirmPassword" type="password" placeholder="Confirm Password" />
+            <div>
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" type="password" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
 
-        <button type="submit">Register</button>
+            <div>
+                <label asp-for="FirstName"></label>
+                <input asp-for="FirstName" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
 
+            <div>
+                <label asp-for="LastName"></label>
+                <input asp-for="LastName" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="EGN"></label>
+                <input asp-for="EGN" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="EGN" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="Address"></label>
+                <input asp-for="Address" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div>
+                <label asp-for="PhoneNumber"></label>
+                <input asp-for="PhoneNumber" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div style="text-align:center;margin-top:8px;">
+                <button type="submit" style="padding:12px 30px;border-radius:30px;background:linear-gradient(45deg,#ff9966,#ff5e62);border:none;color:white;font-weight:600;">Register</button>
+            </div>
+        </div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

@@ -1,49 +1,166 @@
 ﻿@model FlightManager.Models.ReservationCreateViewModel
 
-<h2>Create Reservation</h2>
-
-<form asp-controller="Reservations" asp-action="Create" method="post">
-
-    @Html.AntiForgeryToken()
-
-    <!-- 🔥 показва грешките -->
-    <div asp-validation-summary="All" style="color:red;"></div>
-
-    <input type="hidden" asp-for="FlightId" />
-
-    <div style="margin-bottom:15px;">
-        <label>Email</label><br />
-        <input asp-for="Email" style="padding:5px; width:250px;" />
-    </div>
-
-    <h4>Passenger</h4>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-
-        <input asp-for="Passengers[0].FirstName" placeholder="First Name" style="padding:5px;" />
-
-        <input asp-for="Passengers[0].MiddleName" placeholder="Middle Name" style="padding:5px;" />
-
-        <input asp-for="Passengers[0].LastName" placeholder="Last Name" style="padding:5px;" />
-
-        <input asp-for="Passengers[0].EGN" placeholder="EGN" style="padding:5px;" />
-
-        <input asp-for="Passengers[0].Phone" placeholder="Phone" style="padding:5px;" />
-
-        <input asp-for="Passengers[0].Nationality" placeholder="Nationality" style="padding:5px;" />
-
-        <input asp-for="Passengers[0].TicketType" placeholder="Economy / Business" style="padding:5px;" />
-
-    </div>
-
-    <br />
-
-    <button type="submit"
-            style="background:#ff6b6b; color:white; padding:10px 20px; border:none; border-radius:20px;">
-        Save
-    </button>
-
-</form>
-
-
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var vm = (FlightManager.Models.ReservationCreateViewModel)ViewData.Model;
 }
+
+<div class="card" style="max-width:720px;margin:40px auto;padding:24px;">
+    <h1 style="text-align:center">Reserve Flight</h1>
+
+    <form asp-action="Create" method="post" novalidate>
+        <input type="hidden" asp-for="FlightId" />
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+                <label asp-for="Email"></label>
+                <input asp-for="Email" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+                <div>
+                    <label>Number of passengers</label>
+                    <input id="passengerCount" type="number" min="1" value="@(vm?.Passengers?.Count ?? 1)" style="width:100px;padding:8px;border-radius:8px;" />
+                <button type="button" id="generatePassengers" style="margin-left:8px;padding:8px 12px;border-radius:8px;">Apply</button>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <button id="prevPassenger" type="button" style="display:none;padding:6px 10px;border-radius:6px;">&larr; Previous</button>
+                <div id="passengerPager" style="color:rgba(255,255,255,0.9);"></div>
+                <button id="nextPassenger" type="button" style="display:none;padding:6px 10px;border-radius:6px;">Next &rarr;</button>
+            </div>
+
+            <div id="passengerList">
+                @for (int i = 0; i < (vm?.Passengers?.Count ?? 1); i++)
+                {
+                    <div class="passenger-block" data-index="@i" style="border:1px solid rgba(255,255,255,0.06);padding:12px;border-radius:8px;margin-bottom:8px;">
+                        <h4>Passenger @(@i + 1)</h4>
+                        <div>
+                            <label>First Name</label>
+                            <input name="Passengers[@i].FirstName" value="@(vm?.Passengers?.ElementAtOrDefault(i)?.FirstName ?? String.Empty)" style="width:100%;padding:8px;border-radius:6px;" />
+                        </div>
+                        <div>
+                            <label>Middle Name</label>
+                            <input name="Passengers[@i].MiddleName" value="@(vm?.Passengers?.ElementAtOrDefault(i)?.MiddleName ?? String.Empty)" style="width:100%;padding:8px;border-radius:6px;" />
+                        </div>
+                        <div>
+                            <label>Last Name</label>
+                            <input name="Passengers[@i].LastName" value="@(vm?.Passengers?.ElementAtOrDefault(i)?.LastName ?? String.Empty)" style="width:100%;padding:8px;border-radius:6px;" />
+                        </div>
+                        <div>
+                            <label>EGN</label>
+                            <input name="Passengers[@i].EGN" value="@(vm?.Passengers?.ElementAtOrDefault(i)?.EGN ?? String.Empty)" style="width:100%;padding:8px;border-radius:6px;" />
+                        </div>
+                        <div>
+                            <label>Phone</label>
+                            <input name="Passengers[@i].Phone" value="@(vm?.Passengers?.ElementAtOrDefault(i)?.Phone ?? String.Empty)" style="width:100%;padding:8px;border-radius:6px;" />
+                        </div>
+                        <div>
+                            <label>Nationality</label>
+                            <select name="Passengers[@i].Nationality" style="width:100%;padding:8px;border-radius:6px;">
+                                <option value="">-- Select country --</option>
+                                <option>Bulgaria</option>
+                                <option>Germany</option>
+                                <option>United Kingdom</option>
+                                <option>United States</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Ticket Type</label>
+                            <select name="Passengers[@i].TicketType" style="width:100%;padding:8px;border-radius:6px;">
+                                <option value="Economy">Economy</option>
+                                <option value="Business">Business</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div style="text-align:center;margin-top:8px;">
+                <button type="submit" style="padding:12px 30px;border-radius:30px;background:linear-gradient(45deg,#ff9966,#ff5e62);border:none;color:white;font-weight:600;">Reserve</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<script>
+    (function(){
+        const btn = document.getElementById('generatePassengers');
+        const countInput = document.getElementById('passengerCount');
+        const list = document.getElementById('passengerList');
+        const prev = document.getElementById('prevPassenger');
+        const next = document.getElementById('nextPassenger');
+        const pager = document.getElementById('passengerPager');
+        let currentIndex = 0;
+
+        function showBlock(index){
+            const blocks = list.querySelectorAll('.passenger-block');
+            if (!blocks.length) return;
+            if (index < 0) index = 0;
+            if (index >= blocks.length) index = blocks.length - 1;
+            currentIndex = index;
+            blocks.forEach((b,i)=>{
+                b.style.display = i === index ? '' : 'none';
+            });
+            // pager
+            pager.textContent = `Passenger ${index+1} of ${blocks.length}`;
+            // show/hide buttons
+            if (blocks.length > 1){
+                prev.style.display = index > 0 ? '' : 'none';
+                next.style.display = index < blocks.length - 1 ? '' : 'none';
+            } else {
+                prev.style.display = 'none';
+                next.style.display = 'none';
+            }
+        }
+
+        function initPager(){
+            const blocks = list.querySelectorAll('.passenger-block');
+            // ensure at least one
+            if (!blocks.length){
+                // generate one block
+                btn && btn.click();
+                return;
+            }
+            // hide all except first
+            showBlock(0);
+        }
+
+        // wire prev/next
+        prev && prev.addEventListener('click', ()=> showBlock(currentIndex - 1));
+        next && next.addEventListener('click', ()=> showBlock(currentIndex + 1));
+
+        btn && btn.addEventListener('click', function(){
+            const count = Math.max(1, parseInt(countInput.value || '1'));
+            // clear
+            list.innerHTML = '';
+            for(let i=0;i<count;i++){
+                const block = document.createElement('div');
+                block.className = 'passenger-block';
+                block.style = 'border:1px solid rgba(255,255,255,0.06);padding:12px;border-radius:8px;margin-bottom:8px;';
+                block.innerHTML = `
+                    <h4>Passenger ${i+1}</h4>
+                    <div><label>First Name</label><input name="Passengers[${i}].FirstName" style="width:100%;padding:8px;border-radius:6px;" /></div>
+                    <div><label>Middle Name</label><input name="Passengers[${i}].MiddleName" style="width:100%;padding:8px;border-radius:6px;" /></div>
+                    <div><label>Last Name</label><input name="Passengers[${i}].LastName" style="width:100%;padding:8px;border-radius:6px;" /></div>
+                    <div><label>EGN</label><input name="Passengers[${i}].EGN" style="width:100%;padding:8px;border-radius:6px;" /></div>
+                    <div><label>Phone</label><input name="Passengers[${i}].Phone" style="width:100%;padding:8px;border-radius:6px;" /></div>
+                    <div><label>Nationality</label><select name="Passengers[${i}].Nationality" style="width:100%;padding:8px;border-radius:6px;"><option value="">-- Select country --</option><option>Bulgaria</option><option>Germany</option><option>United Kingdom</option><option>United States</option><option>Other</option></select></div>
+                    <div><label>Ticket Type</label><select name="Passengers[${i}].TicketType" style="width:100%;padding:8px;border-radius:6px;"><option value="Economy">Economy</option><option value="Business">Business</option></select></div>
+                `;
+                list.appendChild(block);
+            }
+            // init pager after generation
+            initPager();
+        });
+
+        // initialize on load
+        initPager();
+    })();
+</script>

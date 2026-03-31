@@ -1,33 +1,100 @@
 ﻿@model FlightManager.Models.FlightAddViewModel
 
-<div class="card">
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var vm = (FlightManager.Models.FlightAddViewModel)ViewData.Model;
+}
 
-    <h1>✈ Create Flight</h1>
+<div class="card" style="max-width:980px;margin:40px auto;padding:24px;">
 
-    <form method="post">
+    <h1 style="text-align:center">✈ Create Flight</h1>
 
-        <input asp-for="FromLocation" placeholder="From location" />
+    <form asp-action="Create" method="post" novalidate>
 
-        <input asp-for="ToLocation" placeholder="To location" />
+        <div style="display:flex;flex-direction:column;gap:12px;">
 
-        <input asp-for="DepartureTime" type="datetime-local" />
+            <div>
+                <label asp-for="FromLocation"></label>
+                <input asp-for="FromLocation" list="airfields" placeholder="Type or select an airfield" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <datalist id="airfields">
+                    <option value="Sofia Airport (SOF)"></option>
+                    <option value="London Heathrow (LHR)"></option>
+                    <option value="John F. Kennedy Intl (JFK)"></option>
+                    <option value="Los Angeles Intl (LAX)"></option>
+                    <option value="Frankfurt (FRA)"></option>
+                    <option value="Paris Charles de Gaulle (CDG)"></option>
+                    <option value="Dubai Intl (DXB)"></option>
+                    <option value="Tokyo Haneda (HND)"></option>
+                </datalist>
+                <span asp-validation-for="FromLocation" class="text-danger"></span>
+            </div>
 
-        <input asp-for="ArrivalTime" type="datetime-local" />
+            <div>
+                <label asp-for="ToLocation"></label>
+                <input asp-for="ToLocation" list="airfields" placeholder="Type or select an airfield" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="ToLocation" class="text-danger"></span>
+            </div>
 
-        <input asp-for="AircraftType" placeholder="Aircraft type" />
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:260px;">
+                    <label asp-for="DepartureTime"></label>
+                    <input asp-for="DepartureTime" type="datetime-local" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                    <span asp-validation-for="DepartureTime" class="text-danger"></span>
+                </div>
+                <div style="flex:1;min-width:260px;">
+                    <label asp-for="ArrivalTime"></label>
+                    <input asp-for="ArrivalTime" type="datetime-local" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                    <span asp-validation-for="ArrivalTime" class="text-danger"></span>
+                </div>
+            </div>
 
-        <input asp-for="AircraftNumber" placeholder="Aircraft number" />
+            <div>
+                <label asp-for="AircraftType"></label>
+                <select asp-for="AircraftType" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);">
+                    <option value="">-- Select aircraft type --</option>
+                    <option>Airbus A320</option>
+                    <option>Boeing 737</option>
+                    <option>Embraer 190</option>
+                    <option>Other</option>
+                </select>
+                <span asp-validation-for="AircraftType" class="text-danger"></span>
+            </div>
 
-        <input asp-for="PilotName" placeholder="Pilot name" />
+            <div>
+                <label asp-for="AircraftNumber"></label>
+                <input asp-for="AircraftNumber" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="AircraftNumber" class="text-danger"></span>
+            </div>
 
-        <input asp-for="EconomySeats" placeholder="Economy seats" />
+            <div>
+                <label asp-for="PilotName"></label>
+                <input asp-for="PilotName" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                <span asp-validation-for="PilotName" class="text-danger"></span>
+            </div>
 
-        <input asp-for="BusinessSeats" placeholder="Business seats" />
+            <div style="display:flex;gap:12px;">
+                <div style="flex:1;">
+                    <label asp-for="EconomySeats"></label>
+                    <input asp-for="EconomySeats" type="number" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                    <span asp-validation-for="EconomySeats" class="text-danger"></span>
+                </div>
+                <div style="flex:1;">
+                    <label asp-for="BusinessSeats"></label>
+                    <input asp-for="BusinessSeats" type="number" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:white;" />
+                    <span asp-validation-for="BusinessSeats" class="text-danger"></span>
+                </div>
+            </div>
 
-        <br><br>
+            <div style="text-align:center;margin-top:8px;">
+                <button type="submit" style="padding:12px 30px;border-radius:30px;background:linear-gradient(45deg,#ff9966,#ff5e62);border:none;color:white;font-weight:600;">Create Flight</button>
+            </div>
 
-        <button>Create Flight</button>
+        </div>
 
     </form>
 
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

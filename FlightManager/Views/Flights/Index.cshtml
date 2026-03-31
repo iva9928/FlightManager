@@ -4,11 +4,14 @@
 
     <h1 style="margin-bottom:20px;">✈ Flights</h1>
 
-    <a asp-controller="Flights" asp-action="Create">
-        <button style="background:#ff6b6b; color:white; padding:10px 20px; border:none; border-radius:20px; margin-bottom:20px;">
-            Add Flight
-        </button>
-    </a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-controller="Flights" asp-action="Create">
+            <button style="background:#ff6b6b; color:white; padding:10px 20px; border:none; border-radius:20px; margin-bottom:20px;">
+                Add Flight
+            </button>
+        </a>
+    }
 
     <table style="width:100%; border-collapse:separate; border-spacing:0 10px;">
 
@@ -39,27 +42,16 @@
                     <td style="display:flex; gap:10px;">
 
                         <!-- Details -->
-                        <a asp-controller="Flights" asp-action="Details" asp-route-id="@flight.Id">
-                            <button style="background:#ff6b6b; color:white; border:none; padding:8px 15px; border-radius:20px;">
-                                Details
-                            </button>
-                        </a>
+                        <a asp-controller="Flights" asp-action="Details" asp-route-id="@flight.Id" style="padding:8px 15px;border-radius:20px;background:#ff6b6b;color:white;text-decoration:none;display:inline-block;">Details</a>
 
-                        <!-- Edit -->
-                        <a asp-controller="Flights" asp-action="Edit" asp-route-id="@flight.Id">
-                            <button style="background:#ff6b6b; color:white; border:none; padding:8px 15px; border-radius:20px;">
-                                Edit
-                            </button>
-                        </a>
+                        <!-- Edit (Admin only) -->
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Flights" asp-action="Edit" asp-route-id="@flight.Id" style="padding:8px 15px;border-radius:20px;background:#ff6b6b;color:white;text-decoration:none;display:inline-block;">Edit</a>
+                        }
 
                         <!-- ✅ РЕЗЕРВАЦИЯ (FIXED) -->
-                        <a asp-controller="Reservations"
-                           asp-action="Create"
-                           asp-route-flightId="@flight.Id">
-                            <button style="background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:20px;">
-                                ✈ Reserve
-                            </button>
-                        </a>
+                        <a asp-controller="Reservations" asp-action="Create" asp-route-flightId="@flight.Id" style="padding:8px 15px;border-radius:20px;background:#27ae60;color:white;text-decoration:none;display:inline-block;">✈ Reserve</a>
 
                     </td>
 

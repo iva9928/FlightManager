@@ -1,54 +1,50 @@
 ﻿@model FlightManager.Models.FlightDetailsViewModel
 
-<div class="card">
+<div class="card" style="max-width:900px;margin:20px auto;padding:24px;">
 
     <h1>✈ Flight Details</h1>
 
-    <p><strong>From:</strong> @Model.FromLocation</p>
-
-    <p><strong>To:</strong> @Model.ToLocation</p>
-
-    <p><strong>Departure:</strong> @Model.DepartureTime</p>
-
-    <p><strong>Arrival:</strong> @Model.ArrivalTime</p>
-
-    <p><strong>Aircraft:</strong> @Model.AircraftType</p>
-
-    <p><strong>Pilot:</strong> @Model.PilotName</p>
-
-    <p><strong>Economy seats:</strong> @Model.EconomySeats</p>
-
-    <p><strong>Business seats:</strong> @Model.BusinessSeats</p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;">
+        <div style="flex:1;min-width:220px;">
+            <p><strong>From:</strong> @Model.FromLocation</p>
+            <p><strong>To:</strong> @Model.ToLocation</p>
+            <p><strong>Departure:</strong> @Model.DepartureTime.ToString("dd.MM.yyyy HH:mm")</p>
+        </div>
+        <div style="flex:1;min-width:220px;">
+            <p><strong>Arrival:</strong> @Model.ArrivalTime.ToString("dd.MM.yyyy HH:mm")</p>
+            <p><strong>Aircraft:</strong> @Model.AircraftType (@Model.AircraftNumber)</p>
+            <p><strong>Pilot:</strong> @Model.PilotName</p>
+        </div>
+        <div style="flex:1;min-width:160px;">
+            <p><strong>Economy seats:</strong> @Model.EconomySeats</p>
+            <p><strong>Business seats:</strong> @Model.BusinessSeats</p>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id"><button style="margin-top:8px;padding:8px 12px;border-radius:8px;background:#ff6b6b;color:white;border:none;">Edit Flight</button></a>
+            }
+        </div>
+    </div>
 
     <h2>Passengers</h2>
 
-    <table>
-
+    <table style="width:100%;border-collapse:collapse;">
         <thead>
-            <tr>
+            <tr style="text-align:left;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:8px;">
                 <th>Name</th>
                 <th>EGN</th>
                 <th>Ticket</th>
             </tr>
         </thead>
-
         <tbody>
-
             @foreach (var p in Model.Passengers)
             {
-                <tr>
-
-                    <td>@p.FirstName @p.LastName</td>
-
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <td>@p.FirstName @p.MiddleName @p.LastName</td>
                     <td>@p.EGN</td>
-
                     <td>@p.TicketType</td>
-
                 </tr>
             }
-
         </tbody>
-
     </table>
 
 </div>

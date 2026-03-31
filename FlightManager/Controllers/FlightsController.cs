@@ -56,9 +56,22 @@ namespace FlightManager.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Data.Models.Flight flight)
+        public async Task<IActionResult> Create(FlightAddViewModel model)
         {
-            if (!ModelState.IsValid) return View(flight);
+            if (!ModelState.IsValid) return View(model);
+
+            var flight = new Data.Models.Flight
+            {
+                FromLocation = model.FromLocation,
+                ToLocation = model.ToLocation,
+                DepartureTime = model.DepartureTime,
+                ArrivalTime = model.ArrivalTime,
+                AircraftType = model.AircraftType,
+                AircraftNumber = model.AircraftNumber,
+                PilotName = model.PilotName,
+                EconomySeats = model.EconomySeats,
+                BusinessSeats = model.BusinessSeats
+            };
 
             await _flightService.AddAsync(flight);
             return RedirectToAction(nameof(Index));
@@ -70,15 +83,42 @@ namespace FlightManager.Controllers
             var flight = await _flightService.GetByIdAsync(id);
             if (flight == null) return NotFound();
 
-            return View(flight);
+            var model = new FlightEditViewModel
+            {
+                Id = flight.Id,
+                FromLocation = flight.FromLocation,
+                ToLocation = flight.ToLocation,
+                DepartureTime = flight.DepartureTime,
+                ArrivalTime = flight.ArrivalTime,
+                AircraftType = flight.AircraftType,
+                AircraftNumber = flight.AircraftNumber,
+                PilotName = flight.PilotName,
+                EconomySeats = flight.EconomySeats,
+                BusinessSeats = flight.BusinessSeats
+            };
+
+            return View(model);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Data.Models.Flight flight)
+        public async Task<IActionResult> Edit(FlightEditViewModel model)
         {
-            if (!ModelState.IsValid) return View(flight);
+            if (!ModelState.IsValid) return View(model);
+
+            var flight = await _flightService.GetByIdAsync(model.Id);
+            if (flight == null) return NotFound();
+
+            flight.FromLocation = model.FromLocation;
+            flight.ToLocation = model.ToLocation;
+            flight.DepartureTime = model.DepartureTime;
+            flight.ArrivalTime = model.ArrivalTime;
+            flight.AircraftType = model.AircraftType;
+            flight.AircraftNumber = model.AircraftNumber;
+            flight.PilotName = model.PilotName;
+            flight.EconomySeats = model.EconomySeats;
+            flight.BusinessSeats = model.BusinessSeats;
 
             await _flightService.UpdateAsync(flight);
             return RedirectToAction(nameof(Index));
@@ -91,13 +131,37 @@ namespace FlightManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [AllowAnonymous]
+        [Authorize]
         public async Task<IActionResult> Details(int id)
         {
             var flight = await _flightService.GetByIdAsync(id);
             if (flight == null) return NotFound();
 
-            return View(flight);
+            var model = new FlightDetailsViewModel
+            {
+                Id = flight.Id,
+                FromLocation = flight.FromLocation,
+                ToLocation = flight.ToLocation,
+                DepartureTime = flight.DepartureTime,
+                ArrivalTime = flight.ArrivalTime,
+                AircraftType = flight.AircraftType,
+                AircraftNumber = flight.AircraftNumber,
+                PilotName = flight.PilotName,
+                EconomySeats = flight.EconomySeats,
+                BusinessSeats = flight.BusinessSeats,
+                Passengers = flight.Reservations?.SelectMany(r => r.Passengers).Select(p => new PassengerViewModel
+                {
+                    FirstName = p.FirstName,
+                    MiddleName = p.MiddleName,
+                    LastName = p.LastName,
+                    EGN = p.EGN,
+                    Phone = p.Phone,
+                    Nationality = p.Nationality,
+                    TicketType = p.TicketType
+                }) ?? Enumerable.Empty<PassengerViewModel>()
+            };
+
+            return View(model);
         }
     }
 }

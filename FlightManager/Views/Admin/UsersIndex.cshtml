@@ -1,0 +1,46 @@
+@model IEnumerable<FlightManager.Models.UserListViewModel>
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="card wide" style="text-align:center;">
+    <h1 style="margin-bottom:10px;color:white;">Users</h1>
+
+    <div style="overflow:auto;text-align:left;">
+        <table class="table-custom" style="width:100%;">
+            <thead>
+                <tr>
+                    <th style="width:35%;">Email</th>
+                    <th style="width:35%;">Name</th>
+                    <th style="width:20%;">Roles</th>
+                    <th style="width:10%;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    var options = new System.Text.StringBuilder();
+                    options.Append("<option value=\"\">-- Select role --</option>");
+                    options.Append("<option value=\"User\"" + (u.Roles.Contains("User") ? " selected=\"selected\"" : "") + ">User</option>");
+                    options.Append("<option value=\"Employee\"" + (u.Roles.Contains("Employee") ? " selected=\"selected\"" : "") + ">Employee</option>");
+                    options.Append("<option value=\"Admin\"" + (u.Roles.Contains("Admin") ? " selected=\"selected\"" : "") + ">Admin</option>");
+
+                    <tr>
+                        <td>@u.Email</td>
+                        <td>@u.FirstName @u.LastName (@u.UserName)</td>
+                        <td>@string.Join(", ", u.Roles)</td>
+                        <td>
+                            <form asp-action="UpdateRole" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <select name="role" class="select-control">@Html.Raw(options.ToString())</select>
+                                <button type="submit" class="btn btn-primary" style="margin-left:8px;">Change</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

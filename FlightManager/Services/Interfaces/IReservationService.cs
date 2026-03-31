@@ -10,6 +10,7 @@ namespace FlightManager.Services.Interfaces
         Task<Reservation?> GetByIdAsync(int id);
         Task<Reservation> CreateAsync(Reservation reservation);
         Task ConfirmAsync(int id);
+        Task UnconfirmAsync(int id);
         Task DeleteAsync(int id);
     }
 }

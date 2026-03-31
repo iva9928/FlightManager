@@ -13,6 +13,7 @@
     <title>Flight Manager</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" />
 
     <style>
 
@@ -100,6 +101,16 @@
             gap: 15px;
         }
 
+        /* dropdowns: white text on dark-blue background to match site palette */
+        select, option {
+            color: #fff !important;
+            background-color: #1e3c72 !important; /* dark blue */
+        }
+
+        .right-nav span {
+            color: white;
+        }
+
         .container {
             padding: 40px;
         }
@@ -139,6 +150,10 @@
         <div class="right-nav">
 
             <a href="/Flights">Flights</a>
+                @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                {
+                    <a href="/Users">Users</a>
+                }
 
             @if (SignInManager.IsSignedIn(User))
             {
@@ -183,6 +198,8 @@
     <div class="container">
         @RenderBody()
     </div>
+
+    @RenderSection("Scripts", required: false)
 
 </body>
 </html>

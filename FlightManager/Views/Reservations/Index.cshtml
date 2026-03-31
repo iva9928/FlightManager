@@ -1,63 +1,62 @@
 ﻿@model IEnumerable<FlightManager.Models.ReservationListViewModel>
 
-<h2>✈️ Reservations</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div style="background-color: #4CAF50; color: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
-        @TempData["Success"]
-    </div>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<table class="table mt-3">
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>Flight</th>
-            <th>Passengers</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
-    </thead>
+<div class="card" style="max-width:1000px;margin:30px auto;padding:20px;">
+    <h1 style="margin-bottom:10px;color:white;">✈ Reservations</h1>
 
-    <tbody>
-        @foreach (var r in Model)
-        {
-            <tr>
-                <td>@r.Email</td>
-                <td>@r.FlightId</td>
-                <td>@r.PassengersCount</td>
+    @if (TempData["Success"] != null)
+    {
+        <div style="background-color: #4CAF50; color: white; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+            @TempData["Success"]
+        </div>
+    }
 
-                <td>
-                    @if (r.Status == "Approved")
-                    {
-                        <span style="color:lightgreen;">✔ Approved</span>
-                    }
-                    else if (r.Status == "Rejected")
-                    {
-                        <span style="color:red;">✖ Rejected</span>
-                    }
-                    else
-                    {
-                        <span style="color:orange;">⏳ Pending</span>
-                    }
-                </td>
+    <div style="overflow:auto">
+        <table style="width:100%;border-collapse:collapse;color:white;">
+            <thead>
+                <tr style="text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <th style="padding:8px;">Email</th>
+                    <th style="padding:8px;">Flight</th>
+                    <th style="padding:8px;">Passengers</th>
+                    <th style="padding:8px;">Status</th>
+                    <th style="padding:8px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr style="background:rgba(255,255,255,0.03);margin-bottom:10px;">
+                        <td style="padding:10px;">@r.Email</td>
+                        <td style="padding:10px;"><a asp-controller="Flights" asp-action="Details" asp-route-id="@r.FlightId" style="color:#ffd166;text-decoration:none;">View flight</a></td>
+                        <td style="padding:10px;">@r.PassengersCount</td>
+                        <td style="padding:10px;">
+                            @if (r.Confirmed)
+                            {
+                                <span style="color:lightgreen;">✔ Confirmed</span>
+                            }
+                            else
+                            {
+                                <span style="color:orange;">⏳ Pending</span>
+                            }
+                        </td>
+                        <td style="padding:10px;">
+                            <a asp-action="Details" asp-route-id="@r.Id" style="padding:6px 10px;border-radius:8px;background:#2b7a78;color:white;text-decoration:none;margin-right:8px;">Reservation Details</a>
 
-                <td>
-
-                    <a asp-action="Details" asp-route-id="@r.Id">Details</a>
-
-                    <!-- 🔥 EMPLOYEE BUTTON -->
-                    @if (User.IsInRole("Employee") && r.Status == "Pending")
-                    {
-                        <form asp-action="Confirm" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@r.Id" />
-                            <button style="background:green; color:white;">Approve</button>
-                        </form>
-                    }
-
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                            @if (User.IsInRole("Employee") && !r.Confirmed)
+                            {
+                                <form asp-action="Confirm" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@r.Id" />
+                                    <button type="submit" style="background:green; color:white; padding:6px 10px;border-radius:6px;border:none;">Approve</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

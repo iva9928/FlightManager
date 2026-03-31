@@ -68,7 +68,8 @@ namespace FlightManager.Controllers
 
             return View("Index", reservations);
         }
-        // 🌍 CREATE – всички логнати
+        // 🌍 CREATE – всеки (анонимен достъп)
+        // CREATE – authenticated users (Users, Employees, Admins)
         [Authorize]
         public async Task<IActionResult> Create(int flightId)
         {
@@ -92,12 +93,31 @@ namespace FlightManager.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+            // Load flight to validate availability before creating reservation
+            var flight = await _flightService.GetByIdAsync(model.FlightId);
+            if (flight == null)
+            {
+                ModelState.AddModelError(string.Empty, "Selected flight was not found.");
+                return View(model);
+            }
+
+            // Count requested seats by ticket type
+            var requestedBusiness = model.Passengers?.Count(p => string.Equals(p.TicketType, "Business", System.StringComparison.OrdinalIgnoreCase)) ?? 0;
+            var requestedTotal = model.Passengers?.Count ?? 0;
+            var requestedEconomy = requestedTotal - requestedBusiness;
+
+            // Check availability
+            if (flight.BusinessSeats < requestedBusiness || flight.EconomySeats < requestedEconomy)
+            {
+                ModelState.AddModelError(string.Empty, $"Not enough available seats. Available: {flight.EconomySeats} economy, {flight.BusinessSeats} business.");
+                return View(model);
+            }
 
             var reservation = new Reservation
             {
                 FlightId = model.FlightId,
                 Email = model.Email,
-                UserId = _userManager.GetUserId(User), // 🔥 ВАЖНО
+                UserId = User.Identity.IsAuthenticated ? _userManager.GetUserId(User) : null,
                 Confirmed = false,
                 Passengers = model.Passengers.Select(p => new Passenger
                 {
@@ -111,14 +131,20 @@ namespace FlightManager.Controllers
                 }).ToList()
             };
 
+            // Create reservation (service will confirm and decrement seats)
             await _reservationService.CreateAsync(reservation);
 
             TempData["Success"] = "Reservation created!";
-            return RedirectToAction(nameof(MyReservations));
+            if (User.Identity.IsAuthenticated)
+                return RedirectToAction(nameof(MyReservations));
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // 🔵 EMPLOYEE одобрява
+        // 🔵 EMPLOYEE одобрява (POST)
         [Authorize(Roles = "Employee")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id)
         {
             await _reservationService.ConfirmAsync(id);
@@ -127,8 +153,57 @@ namespace FlightManager.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [Authorize(Roles = "Employee")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unconfirm(int id)
+        {
+            await _reservationService.UnconfirmAsync(id);
+
+            TempData["Success"] = "Reservation unconfirmed and seats returned.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Details - allow Employee/Admin to view any, Users to view their own
+        [Authorize]
+        public async Task<IActionResult> Details(int id)
+        {
+            var reservation = await _reservationService.GetByIdAsync(id);
+            if (reservation == null) return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+            if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
+            {
+                // only allow owner to view
+                if (reservation.UserId != currentUserId) return Unauthorized();
+            }
+
+            var model = new ReservationCreateViewModel
+            {
+                FlightId = reservation.FlightId,
+                Email = reservation.Email,
+                Passengers = reservation.Passengers.Select(p => new PassengerViewModel
+                {
+                    FirstName = p.FirstName,
+                    MiddleName = p.MiddleName,
+                    LastName = p.LastName,
+                    EGN = p.EGN,
+                    Phone = p.Phone,
+                    Nationality = p.Nationality,
+                    TicketType = p.TicketType
+                }).ToList()
+            };
+
+            ViewBag.Confirmed = reservation.Confirmed;
+            ViewBag.ReservationId = reservation.Id;
+
+            return View(model);
+        }
         // 🟡 USER може да трие САМО своите
         [Authorize(Roles = "User")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var reservation = await _reservationService.GetByIdAsync(id);
