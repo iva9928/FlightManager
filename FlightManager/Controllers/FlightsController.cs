@@ -7,15 +7,29 @@ using FlightManager.Models;
 
 namespace FlightManager.Controllers
 {
+    /// <summary>
+    /// Контролер за управление на полети — преглед, създаване, редактиране и изтриване.
+    /// </summary>
     public class FlightsController : Controller
     {
         private readonly IFlightService _flightService;
 
+        /// <summary>
+        /// Инициализира нов екземпляр на <see cref="FlightsController"/>.
+        /// </summary>
+        /// <param name="flightService">Услуга за работа с полети.</param>
         public FlightsController(IFlightService flightService)
         {
             _flightService = flightService;
         }
 
+        /// <summary>
+        /// Показва списък с всички полети с поддръжка на търсене и странициране.
+        /// Достъпно за всички потребители, включително анонимни.
+        /// </summary>
+        /// <param name="search">Низ за търсене по начална или крайна дестинация.</param>
+        /// <param name="page">Номер на текущата страница (по подразбиране 1).</param>
+        /// <returns>Изглед със списък от полети.</returns>
         [AllowAnonymous]
         public async Task<IActionResult> Index(string search, int page = 1)
         {
@@ -50,9 +64,23 @@ namespace FlightManager.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Показва формата за създаване на нов полет.
+        /// Достъпно само за администратори.
+        /// </summary>
+        /// <returns>Изглед за създаване на полет.</returns>
         [Authorize(Roles = "Admin")]
         public IActionResult Create() => View();
 
+        /// <summary>
+        /// Обработва POST заявка за създаване на нов полет.
+        /// Достъпно само за администратори.
+        /// </summary>
+        /// <param name="model">Модел с данни за новия полет.</param>
+        /// <returns>
+        /// Пренасочване към списъка с полети при успех;
+        /// изглед с грешки при невалидни данни.
+        /// </returns>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -77,6 +105,15 @@ namespace FlightManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Показва формата за редактиране на съществуващ полет.
+        /// Достъпно само за администратори.
+        /// </summary>
+        /// <param name="id">Идентификатор на полета.</param>
+        /// <returns>
+        /// Изглед за редактиране при намерен полет;
+        /// <see cref="NotFoundResult"/> ако полетът не съществува.
+        /// </returns>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
@@ -100,6 +137,15 @@ namespace FlightManager.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Обработва POST заявка за редактиране на съществуващ полет.
+        /// Достъпно само за администратори.
+        /// </summary>
+        /// <param name="model">Модел с актуализирани данни за полета.</param>
+        /// <returns>
+        /// Пренасочване към списъка с полети при успех;
+        /// изглед с грешки при невалидни данни или ненамерен полет.
+        /// </returns>
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -124,6 +170,12 @@ namespace FlightManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Изтрива полет по зададен идентификатор.
+        /// Достъпно само за администратори.
+        /// </summary>
+        /// <param name="id">Идентификатор на полета за изтриване.</param>
+        /// <returns>Пренасочване към списъка с полети.</returns>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -131,6 +183,15 @@ namespace FlightManager.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Показва детайлна информация за конкретен полет, включително списък с пасажери.
+        /// Достъпно само за автентикирани потребители.
+        /// </summary>
+        /// <param name="id">Идентификатор на полета.</param>
+        /// <returns>
+        /// Изглед с детайли за полета при намерен запис;
+        /// <see cref="NotFoundResult"/> ако полетът не съществува.
+        /// </returns>
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {

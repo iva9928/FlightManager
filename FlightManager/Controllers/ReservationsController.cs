@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace FlightManager.Controllers
 {
+    /// <summary>
+    /// Контролер за управление на резервации — създаване, преглед, потвърждаване и изтриване.
+    /// </summary>
     public class ReservationsController : Controller
     {
         private readonly IReservationService _reservationService;
@@ -18,6 +21,13 @@ namespace FlightManager.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<ReservationsController> _logger;
 
+        /// <summary>
+        /// Инициализира нов екземпляр на <see cref="ReservationsController"/>.
+        /// </summary>
+        /// <param name="reservationService">Услуга за работа с резервации.</param>
+        /// <param name="flightService">Услуга за работа с полети.</param>
+        /// <param name="userManager">Услуга за управление на потребители.</param>
+        /// <param name="logger">Услуга за логване.</param>
         public ReservationsController(
             IReservationService reservationService,
             IFlightService flightService,
@@ -30,7 +40,11 @@ namespace FlightManager.Controllers
             _logger = logger;
         }
 
-        // 🔴 ADMIN + EMPLOYEE виждат ВСИЧКО
+        /// <summary>
+        /// Показва списък с всички резервации.
+        /// Достъпно само за администратори и служители.
+        /// </summary>
+        /// <returns>Изглед със списък от всички резервации.</returns>
         [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> Index()
         {
@@ -49,7 +63,11 @@ namespace FlightManager.Controllers
             return View(model);
         }
 
-        // 🟡 USER вижда само своите
+        /// <summary>
+        /// Показва само резервациите на текущо влезлия потребител.
+        /// Достъпно само за потребители с роля "User".
+        /// </summary>
+        /// <returns>Изглед със списък от резервации на текущия потребител.</returns>
         [Authorize(Roles = "User")]
         public async Task<IActionResult> MyReservations()
         {
@@ -68,8 +86,16 @@ namespace FlightManager.Controllers
 
             return View("Index", reservations);
         }
-        // 🌍 CREATE – всеки (анонимен достъп)
-        // CREATE – authenticated users (Users, Employees, Admins)
+
+        /// <summary>
+        /// Показва формата за създаване на нова резервация за конкретен полет.
+        /// Достъпно само за автентикирани потребители.
+        /// </summary>
+        /// <param name="flightId">Идентификатор на полета, за който се прави резервация.</param>
+        /// <returns>
+        /// Изглед за създаване на резервация;
+        /// <see cref="NotFoundResult"/> ако полетът не съществува.
+        /// </returns>
         [Authorize]
         public async Task<IActionResult> Create(int flightId)
         {
@@ -86,6 +112,16 @@ namespace FlightManager.Controllers
             });
         }
 
+        /// <summary>
+        /// Обработва POST заявка за създаване на нова резервация.
+        /// Проверява наличността на места преди записа.
+        /// Достъпно само за автентикирани потребители.
+        /// </summary>
+        /// <param name="model">Модел с данни за резервацията и пасажерите.</param>
+        /// <returns>
+        /// Пренасочване към резервациите на потребителя при успех;
+        /// изглед с грешки при невалидни данни или липса на свободни места.
+        /// </returns>
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -93,23 +129,23 @@ namespace FlightManager.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
-            // Load flight to validate availability before creating reservation
+
             var flight = await _flightService.GetByIdAsync(model.FlightId);
             if (flight == null)
             {
-                ModelState.AddModelError(string.Empty, "Selected flight was not found.");
+                ModelState.AddModelError(string.Empty, "Избраният полет не беше намерен.");
                 return View(model);
             }
 
-            // Count requested seats by ticket type
+            // Преброяване на заявените места по тип билет
             var requestedBusiness = model.Passengers?.Count(p => string.Equals(p.TicketType, "Business", System.StringComparison.OrdinalIgnoreCase)) ?? 0;
             var requestedTotal = model.Passengers?.Count ?? 0;
             var requestedEconomy = requestedTotal - requestedBusiness;
 
-            // Check availability
+            // Проверка за наличност на места
             if (flight.BusinessSeats < requestedBusiness || flight.EconomySeats < requestedEconomy)
             {
-                ModelState.AddModelError(string.Empty, $"Not enough available seats. Available: {flight.EconomySeats} economy, {flight.BusinessSeats} business.");
+                ModelState.AddModelError(string.Empty, $"Няма достатъчно свободни места. Налични: {flight.EconomySeats} икономична класа, {flight.BusinessSeats} бизнес класа.");
                 return View(model);
             }
 
@@ -131,41 +167,59 @@ namespace FlightManager.Controllers
                 }).ToList()
             };
 
-            // Create reservation (service will confirm and decrement seats)
+            // Създаване на резервацията — услугата потвърждава и намалява броя на местата
             await _reservationService.CreateAsync(reservation);
 
-            TempData["Success"] = "Reservation created!";
+            TempData["Success"] = "Резервацията е създадена успешно!";
             if (User.Identity.IsAuthenticated)
                 return RedirectToAction(nameof(MyReservations));
 
             return RedirectToAction(nameof(Index));
         }
 
-        // 🔵 EMPLOYEE одобрява (POST)
+        /// <summary>
+        /// Потвърждава резервация по зададен идентификатор.
+        /// Достъпно само за служители.
+        /// </summary>
+        /// <param name="id">Идентификатор на резервацията за потвърждаване.</param>
+        /// <returns>Пренасочване към списъка с резервации.</returns>
         [Authorize(Roles = "Employee")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Confirm(int id)
         {
             await _reservationService.ConfirmAsync(id);
-
-            TempData["Success"] = "Reservation approved!";
-
+            TempData["Success"] = "Резервацията е потвърдена!";
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Отменя потвърждението на резервация и връща местата като налични.
+        /// Достъпно само за служители.
+        /// </summary>
+        /// <param name="id">Идентификатор на резервацията.</param>
+        /// <returns>Пренасочване към списъка с резервации.</returns>
         [Authorize(Roles = "Employee")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Unconfirm(int id)
         {
             await _reservationService.UnconfirmAsync(id);
-
-            TempData["Success"] = "Reservation unconfirmed and seats returned.";
+            TempData["Success"] = "Потвърждението е отменено и местата са върнати.";
             return RedirectToAction(nameof(Index));
         }
 
-        // Details - allow Employee/Admin to view any, Users to view their own
+        /// <summary>
+        /// Показва детайлна информация за конкретна резервация.
+        /// Администраторите и служителите виждат всяка резервация;
+        /// обикновените потребители могат да виждат само своите.
+        /// </summary>
+        /// <param name="id">Идентификатор на резервацията.</param>
+        /// <returns>
+        /// Изглед с детайли за резервацията;
+        /// <see cref="NotFoundResult"/> ако резервацията не съществува;
+        /// <see cref="UnauthorizedResult"/> ако потребителят няма право на достъп.
+        /// </returns>
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
@@ -175,7 +229,6 @@ namespace FlightManager.Controllers
             var currentUserId = _userManager.GetUserId(User);
             if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
             {
-                // only allow owner to view
                 if (reservation.UserId != currentUserId) return Unauthorized();
             }
 
@@ -200,7 +253,18 @@ namespace FlightManager.Controllers
 
             return View(model);
         }
-        // 🟡 USER може да трие САМО своите
+
+        /// <summary>
+        /// Изтрива резервация, принадлежаща на текущия потребител.
+        /// Потребителят може да изтрива само собствените си резервации.
+        /// Достъпно само за потребители с роля "User".
+        /// </summary>
+        /// <param name="id">Идентификатор на резервацията за изтриване.</param>
+        /// <returns>
+        /// Пренасочване към резервациите на потребителя при успех;
+        /// <see cref="NotFoundResult"/> ако резервацията не съществува;
+        /// <see cref="UnauthorizedResult"/> ако потребителят не е собственик.
+        /// </returns>
         [Authorize(Roles = "User")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -213,7 +277,7 @@ namespace FlightManager.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            // 🔥 защита
+            // Проверка дали текущият потребител е собственик на резервацията
             if (reservation.UserId != userId)
                 return Unauthorized();
 
